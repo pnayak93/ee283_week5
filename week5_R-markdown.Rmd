@@ -1,0 +1,393 @@
+---
+title: "week5_lab"
+author: "Pavan Nayak"
+date: "2/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(reticulate)
+use_python("C:/Users/Pavan Nayak/Anaconda3/python.exe")
+```
+
+```{python}
+import os
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import sqlite3
+os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = 'C:/Users/Pavan Nayak/Anaconda3/Library/plugins/platforms'
+```
+
+```{python}
+f, ax = plt.subplots()
+x = [i for i in range(10)]
+y = [i**2 for i in x]
+ax.plot(x, y)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+```
+
+```{python}
+#change x label to sigma and y label to tau
+f, ax = plt.subplots()
+ax.plot(x,y)
+ax.set_xlabel('σ')
+ax.set_ylabel('τ')
+```
+
+```{python}
+#add in subscript i and superscript 2 for sigma xlabel
+f, ax = plt.subplots()
+ax.plot(x,y)
+ax.set_xlabel(r'$\sigma_i^2$')
+ax.set_ylabel(r'$\tau$')
+```
+
+```{python}
+#change line color to red, make dot-dash, and increase thickness 3x
+f, ax = plt.subplots()
+ax.plot(x,y, color="red", linestyle="-.", linewidth=5.0)
+ax.set_xlabel(r'$\sigma_i^2$')
+ax.set_ylabel(r'$\tau$')
+```
+
+```{python}
+#add gamma=7 to the title of the plot
+f, ax = plt.subplots()
+z=7
+ax.plot(x, y)
+ax.set_title(r'$\gamma$'+ ' = ' + str(z))
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+```
+```{python}
+#add gamma=7 as a text element to a coordinate on the plot
+f, ax = plt.subplots()
+z=7
+ax.plot(x, y)
+ax.set_title(r'$\gamma$'+ ' = ' + str(z))
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.text(0.1, 0.4, r'$\gamma$'+ ' = ' + str(z) + ' SAMPLE-TEXT-ELEMENT')
+```
+
+```{python}
+#save as pdf
+f, ax = plt.subplots()
+z=7
+font = 18.0
+ax.plot(x, y)
+ax.set_title(r'$\gamma$'+ ' = ' + str(z))
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.text(0.1, 0.4, r'$\gamma$'+ ' = ' + str(z) + ' SAMPLE-TEXT-ELEMENT', fontsize=font)
+f.set_size_inches(10,10)
+for item in ([ax.title, ax.xaxis.label, ax.yaxis.label,] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+    item.set_fontsize(font)
+f.savefig('testpdf.pdf', format='pdf', dpi=100)
+```
+```{python}
+#save as tiff
+f, ax = plt.subplots()
+z=7
+ax.plot(x, y)
+ax.set_title(r'$\gamma$'+ ' = ' + str(z))
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.text(0.1, 0.4, r'$\gamma$'+ ' = ' + str(z) + ' SAMPLE-TEXT-ELEMENT', fontsize = font)
+f.set_size_inches(10,10)
+fontsize = 18
+for item in ([ax.title, ax.xaxis.label, ax.yaxis.label,] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+             if item == ax.xaxis.label:
+                item.set_fontsize(fontsize/2)
+             else:
+                item.set_fontsize(fontsize)
+f.savefig('testtiff.tiff', format='tiff', dpi=100)
+```
+
+```{python}
+#save as png 72 dpi
+f, ax = plt.subplots()
+z=7
+ax.plot(x, y)
+ax.set_title(r'$\gamma$'+ ' = ' + str(z))
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.text(0.1, 0.4, r'$\gamma$'+ ' = ' + str(z) + ' SAMPLE-TEXT-ELEMENT', fontsize = font)
+f.set_size_inches(10,10)
+fontsize = 18
+for item in ([ax.title, ax.xaxis.label, ax.yaxis.label,] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+             if item == ax.xaxis.label:
+                item.set_fontsize(fontsize/2)
+             else:
+                item.set_fontsize(fontsize)
+f.savefig('testpng72.png', format='png', dpi=72)
+```
+
+```{python}
+#save as png 300 dpi
+f, ax = plt.subplots()
+z=7
+ax.plot(x, y)
+ax.set_title(r'$\gamma$'+ ' = ' + str(z))
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.text(0.1, 0.4, r'$\gamma$'+ ' = ' + str(z) + ' SAMPLE-TEXT-ELEMENT', fontsize = font)
+f.set_size_inches(10,10)
+fontsize = 18
+for item in ([ax.title, ax.xaxis.label, ax.yaxis.label,] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+             if item == ax.xaxis.label:
+                item.set_fontsize(fontsize/2)
+             else:
+                item.set_fontsize(fontsize)
+f.savefig('testpng300.png', format='png', dpi=300)
+```
+
+
+```{r}
+library(dbplyr)
+if (file.exists("mtcars.sqlite3"))
+{
+   file.remove("mtcars.sqlite3")
+}
+con <- DBI::dbConnect(RSQLite::SQLite(), "mtcars.sqlite3")
+DBI::dbWriteTable(con, "mtcars", mtcars)
+DBI::dbDisconnect(con)
+```
+
+```{python}
+#create ggplot equivalent in seaborn
+def plot_mtcars(sqldata):
+    con = sqlite3.connect(sqldata)
+    mtcars = pd.read_sql_query("SELECT * from mtcars", con)
+    
+    sns_plot = sns.scatterplot(data=mtcars,x="cyl",y="mpg")
+    plt.show()
+    return
+plot_mtcars('mtcars.sqlite3')
+```
+
+```{python}
+#create ggplot equivalent in seaborn changing x and y labels to sigma and tau
+def plot_mtcars(sqldata):
+    con = sqlite3.connect(sqldata)
+    mtcars = pd.read_sql_query("SELECT * from mtcars", con)
+    f, ax = plt.subplots()
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg")
+    ax.set_xlabel(r'$\sigma$')
+    ax.set_ylabel(r'$\tau$')
+    plt.show()
+    return
+plot_mtcars('mtcars.sqlite3')
+```
+
+```{python}
+#create ggplot equivalent in seaborn changing x and y labels to sigma and tau
+def plot_mtcars(sqldata):
+    con = sqlite3.connect(sqldata)
+    mtcars = pd.read_sql_query("SELECT * from mtcars", con)
+    f, ax = plt.subplots()
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg")
+    ax.set_xlabel(r'$\sigma_i^2$')
+    ax.set_ylabel(r'$\tau$')
+    plt.show()
+    return
+plot_mtcars('mtcars.sqlite3')
+```
+
+```{python}
+#create ggplot equivalent in seaborn changing x label to sigma with superscript and subscript
+def plot_mtcars(sqldata):
+    con = sqlite3.connect(sqldata)
+    mtcars = pd.read_sql_query("SELECT * from mtcars", con)
+    f, ax = plt.subplots()
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg")
+    ax.set_xlabel(r'$\sigma_i^2$')
+    ax.set_ylabel(r'$\tau$')
+    plt.show()
+    return
+plot_mtcars('mtcars.sqlite3')
+```
+
+```{python}
+#create ggplot equivalent in seaborn changing marker color to red and size to 500
+def plot_mtcars(sqldata):
+    con = sqlite3.connect(sqldata)
+    mtcars = pd.read_sql_query("SELECT * from mtcars", con)
+    f, ax = plt.subplots()
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg", color='red', marker='.', s=500)
+    ax.set_xlabel(r'$\sigma_i^2$')
+    ax.set_ylabel(r'$\tau$')
+    plt.show()
+    return
+plot_mtcars('mtcars.sqlite3')
+```
+
+```{python}
+#create ggplot equivalent in seaborn changing title to gamma=7 and adding text element at x=0.1 y=0.4
+def plot_mtcars(sqldata):
+    con = sqlite3.connect(sqldata)
+    mtcars = pd.read_sql_query("SELECT * from mtcars", con)
+    z=7
+    f, ax = plt.subplots()
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg", color='red', marker='_', s=500)
+    ax.text(4, 20, r'$\gamma$'+ ' = ' + str(z) + ' SAMPLE-TEXT-ELEMENT',fontsize=font)
+    ax.set_xlabel(r'$\sigma_i^2$')
+    ax.set_ylabel(r'$\tau$')
+    ax.set_title(r'$\gamma$'+ ' = ' + str(z))
+    plt.show()
+    return
+plot_mtcars('mtcars.sqlite3')
+```
+
+```{python}
+#create ggplot equivalent in seaborn creating 1x2 multiplot
+def plot_mtcars(sqldata):
+    con = sqlite3.connect(sqldata)
+    mtcars = pd.read_sql_query("SELECT * from mtcars", con)
+    z=7
+    f, (ax,ax2) = plt.subplots(1,2,figsize=(12,5))
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg", color='red', marker='.', s=500, ax=ax)
+    ax.text(4, 20, r'$\gamma$'+ ' = ' + str(z) + ' SAMPLE-TEXT-ELEMENT',fontsize=font)
+    ax.set_xlabel(r'$\sigma_i^2$')
+    ax.set_ylabel(r'$\tau$')
+    ax.set_title(r'$\gamma$'+ ' = ' + str(z))
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg", color='red', marker='.', s=500,ax=ax2)
+    ax2.text(4, 20, r'$\gamma$'+ ' = ' + str(z) + ' SAMPLE-TEXT-ELEMENT',fontsize=font)
+    ax2.set_xlabel(r'$\sigma_i^2$')
+    ax2.set_ylabel(r'$\tau$')
+    ax2.set_title(r'$\gamma$'+ ' = ' + str(z))
+    
+    plt.show()
+    return
+plot_mtcars('mtcars.sqlite3')
+```
+
+```{python}
+#create ggplot equivalent in seaborn creating 2x2 multiplot
+def plot_mtcars(sqldata):
+    con = sqlite3.connect(sqldata)
+    mtcars = pd.read_sql_query("SELECT * from mtcars", con)
+    z=7
+    f, ((ax,ax2),(ax3,ax4)) = plt.subplots(2,2,figsize=(12,5))
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg", color='red', marker='.', s=500, ax=ax)
+    ax.text(4, 20, r'$\gamma$'+ ' = ' + str(z) + ' SAMPLE-TEXT-ELEMENT',fontsize=font)
+    ax.set_xlabel(r'$\sigma_i^2$')
+    ax.set_ylabel(r'$\tau$')
+    ax.set_title(r'$\gamma$'+ ' = ' + str(z))
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg", color='red', marker='.', s=500,ax=ax2)
+    ax2.text(4, 20, r'$\gamma$'+ ' = ' + str(z) + ' SAMPLE-TEXT-ELEMENT',fontsize=font)
+    ax2.set_xlabel(r'$\sigma_i^2$')
+    ax2.set_ylabel(r'$\tau$')
+    ax2.set_title(r'$\gamma$'+ ' = ' + str(z))
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg", color='red', marker='.', s=500,ax=ax3)
+    ax3.text(4, 20, r'$\gamma$'+ ' = ' + str(z) + ' SAMPLE-TEXT-ELEMENT',fontsize=font)
+    ax3.set_xlabel(r'$\sigma_i^2$')
+    ax3.set_ylabel(r'$\tau$')
+    ax3.set_title(r'$\gamma$'+ ' = ' + str(z))
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg", color='red', marker='.', s=500,ax=ax4)
+    ax4.text(4, 20, r'$\gamma$'+ ' = ' + str(z) + ' SAMPLE-TEXT-ELEMENT',fontsize=font)
+    ax4.set_xlabel(r'$\sigma_i^2$')
+    ax4.set_ylabel(r'$\tau$')
+    ax4.set_title(r'$\gamma$'+ ' = ' + str(z))
+    plt.show()
+    return
+plot_mtcars('mtcars.sqlite3')
+```
+
+```{python}
+#create ggplot equivalent in seaborn and save file as pdf
+def plot_mtcars(sqldata):
+    con = sqlite3.connect(sqldata)
+    mtcars = pd.read_sql_query("SELECT * from mtcars", con)
+    f, ax = plt.subplots()
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg")
+    ax.set_xlabel(r'$\sigma_i^2$')
+    ax.set_ylabel(r'$\tau$')
+    fontsize = 18
+    f.set_size_inches(10,10)
+    for item in ([ax.title, ax.xaxis.label, ax.yaxis.label,] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+             if item == ax.xaxis.label:
+                item.set_fontsize(fontsize)
+             else:
+                item.set_fontsize(fontsize)
+    f.savefig('seabornpdf.pdf',dpi=100)
+    return
+plot_mtcars('mtcars.sqlite3')
+```
+
+```{python}
+#create ggplot equivalent in seaborn and save file as tiff
+def plot_mtcars(sqldata):
+    con = sqlite3.connect(sqldata)
+    mtcars = pd.read_sql_query("SELECT * from mtcars", con)
+    f, ax = plt.subplots()
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg")
+    ax.set_xlabel(r'$\sigma_i^2$')
+    ax.set_ylabel(r'$\tau$')
+    fontsize = 18
+    f.set_size_inches(10,10)
+    for item in ([ax.title, ax.xaxis.label, ax.yaxis.label,] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+             if item == ax.xaxis.label:
+                item.set_fontsize(fontsize/2)
+             else:
+                item.set_fontsize(fontsize)
+    f.savefig('seaborntiff.tiff',dpi=100)
+    return
+plot_mtcars('mtcars.sqlite3')
+```
+
+```{python}
+#create ggplot equivalent in seaborn and save file as 72 dpi png
+def plot_mtcars(sqldata):
+    con = sqlite3.connect(sqldata)
+    mtcars = pd.read_sql_query("SELECT * from mtcars", con)
+    f, ax = plt.subplots()
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg")
+    ax.set_xlabel(r'$\sigma_i^2$')
+    ax.set_ylabel(r'$\tau$')
+    fontsize = 18
+    f.set_size_inches(10,10)
+    for item in ([ax.title, ax.xaxis.label, ax.yaxis.label,] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+             if item == ax.xaxis.label:
+                item.set_fontsize(fontsize)
+             else:
+                item.set_fontsize(fontsize)
+    f.savefig('seaborn72png.png',dpi=72)
+    return
+plot_mtcars('mtcars.sqlite3')
+```
+
+```{python}
+#create ggplot equivalent in seaborn and save file as 300 dpi png
+def plot_mtcars(sqldata):
+    con = sqlite3.connect(sqldata)
+    mtcars = pd.read_sql_query("SELECT * from mtcars", con)
+    f, ax = plt.subplots()
+    sns.scatterplot(data=mtcars,x="cyl",y="mpg")
+    ax.set_xlabel(r'$\sigma_i^2$')
+    ax.set_ylabel(r'$\tau$')
+    fontsize = 18
+    f.set_size_inches(10,10)
+    for item in ([ax.title, ax.xaxis.label, ax.yaxis.label,] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+             if item == ax.xaxis.label:
+                item.set_fontsize(fontsize)
+             else:
+                item.set_fontsize(fontsize)
+    f.savefig('seaborn300png.png',dpi=300)
+    return
+plot_mtcars('mtcars.sqlite3')
+```
+
+
